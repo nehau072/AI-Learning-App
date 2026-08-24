@@ -2,42 +2,49 @@ const errorHandler = (err, req, res, next) => {
     let statusCode = err.statusCode || 500;
     let message = err.message || 'Server Error';
 
-    if(err.name=== 'CastError') {
+    if (err.name === 'CastError') {
         message = 'Resource not found';
         statusCode = 404;
     }
 
-    if(err.code === 11000) {
+    if (err.code === 11000) {
         const field = Object.keys(err.keyValue)[0];
-        message = `${feild} already exists`;
+        message = `${field} already exists`;
         statusCode = 400;
     }
 
-    if(err.name === 'ValidationError') {
-        message = Object.values(err.errors).map(val => val.message).join(', ');
+    if (err.name === 'ValidationError') {
+        message = Object.values(err.errors)
+            .map(val => val.message)
+            .join(', ');
         statusCode = 400;
     }
 
-    if(err.name === 'LIMIT_FILE_SIZE') {
+    if (err.name === 'LIMIT_FILE_SIZE') {
         message = 'File size exceeds the maximum limit of 10MB';
         statusCode = 400;
     }
 
-    if(err.name === 'TokenExpiredError') {
+    if (err.name === 'TokenExpiredError') {
         message = 'Token expired';
         statusCode = 401;
     }
 
     console.log('Error:', {
         message: err.message,
-        stack: process.env.NODE_ENV ==='development' ? err.stack : undefined
+        stack: process.env.NODE_ENV === 'development'
+            ? err.stack
+            : undefined
     });
 
-    res.status(statusCode).json ({
+    res.status(statusCode).json({
         success: false,
         error: message,
         statusCode,
-        ...err(process.env.NODE_ENV === 'development' && {stack : err.stack})
+        ...(process.env.NODE_ENV === 'development' && {
+            stack: err.stack
+        })
     });
 };
+
 export default errorHandler;
